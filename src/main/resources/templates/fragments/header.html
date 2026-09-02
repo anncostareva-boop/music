@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${title}">Float</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                    radial-gradient(circle at 20% 20%, #4530c9 0%, transparent 40%),
+                    radial-gradient(circle at 80% 80%, #7a2cff 0%, transparent 35%),
+                    linear-gradient(135deg, #0f172a, #312e81);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+</html>

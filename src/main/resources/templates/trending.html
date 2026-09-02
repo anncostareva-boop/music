@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="trending" type="java.util.List<com.music.app.entity.Song>"*/-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSRF Tokens for AJAX/fetch logging -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+
+    <title>Trending Hits - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to your Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
+
+    <!-- Header Title -->
+    <div class="text-center sm:text-left">
+        <h1 class="text-3xl md:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-purple-400 tracking-tight">
+            Explore Latest Hits
+        </h1>
+        <p class="text-xs text-purple-200/50 mt-1 tracking-wide">The most played tracks on Float right now.</p>
+    </div>
+
+    <!-- LEADERBOARD LIST CONTAINER -->
+    <div class="glass-card rounded-[2.5rem] overflow-hidden p-3">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <tbody class="divide-y divide-white/[0.04] text-sm font-light text-purple-100">
+
+                <!-- Dynamic Loop -->
+                <tr th:each="song, iterStat : ${trending}"
+                    class="hover:bg-white/[0.02] transition-colors duration-150 group">
+
+                    <!-- 1. Ranking & Art -->
+                    <td class="py-4 px-6 font-medium text-white flex items-center gap-4">
+                        <!-- Glowing ranking numbers for the top tracks -->
+                        <span class="text-sm font-bold text-purple-400/80 w-6 text-center" th:text="${iterStat.count}">1</span>
+
+                        <!-- Dynamic Song Artwork Container -->
+                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 shadow-md">
+                            <img th:src="@{/files/{name}(name=${song.artworkFileName != null ? song.artworkFileName : 'default-cover.jpg'})}"
+                                 alt="Cover Artwork"
+                                 class="w-full h-full object-cover">
+                        </div>
+
+                        <!-- Track Details Stack -->
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-white tracking-wide cursor-pointer hover:text-purple-300 transition-colors play-btn"
+                                  th:data-src="@{/files/{name}(name=${song.fileName})}"
+                                  th:data-song-id="${song.songID}"
+                                  th:text="${song.songName}">Title</span>
+                            <span class="text-xs text-purple-200/40 mt-0.5" th:text="${song.artistName != null ? song.artistName : 'Unknown Artist'}">Artist</span>
+                        </div>
+                    </td>
+
+                    <!-- 2. Genre Tag Column -->
+                    <td class="py-4 px-6">
+                        <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/5 text-purple-200/60"
+                              th:text="${song.genreName != null ? song.genreName : 'General'}">
+                            Genre
+                        </span>
+                    </td>
+
+                    <!-- 3. Song Likes -->
+                    <td class="py-4 px-6 text-right font-mono text-xs text-purple-300">
+                        <form th:action="@{/client/toggle-like/{id}(id=${song.songID})}"
+                              method="post"
+                              class="inline">
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:scale-105 transition-all text-xs font-mono">
+                                <span th:text="${song != null && likedSongIds != null && likedSongIds.contains(song.songID) ? '❤️' : '🤍'}">🤍</span>
+                                <span th:text="${song != null ? song.songLikesAmount : 0}">0</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(trending)}">
+                    <td colspan="3" class="py-16 text-center text-sm text-purple-200/30 font-light tracking-wide">
+                        No trending songs available yet. Keep listening to build the charts!
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- Global Sticky Audio Player -->
+<div id="player-container" class="fixed bottom-0 left-0 w-full bg-[#0a0a0f]/90 backdrop-blur-md border-t border-white/10 p-3 hidden z-50 transform translate-y-full transition-transform duration-300">
+    <div class="max-w-5xl mx-auto px-4">
+        <audio id="global-audio-player" controls class="w-full h-10 rounded-full outline-none" controlsList="nodownload">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const audioPlayer = document.getElementById("global-audio-player");
+        const playerContainer = document.getElementById("player-container");
+        const playButtons = document.querySelectorAll(".play-btn");
+
+        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+
+        playButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const audioUrl = this.dataset.src;
+                const songId = this.dataset.songId;
+
+                if (!audioUrl) return;
+
+                playerContainer.classList.remove("hidden", "translate-y-full");
+                audioPlayer.src = audioUrl;
+                audioPlayer.play();
+
+                if (songId) {
+                    const headers = {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    };
+
+                    if (csrfToken && csrfHeader) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    fetch("/api/history/record", {
+                        method: "POST",
+                        headers: headers,
+                        body: "songId=" + encodeURIComponent(songId)
+                    })
+                        .then(response => console.log("History saved:", response.status))
+                        .catch(error => console.error("Error logging history:", error));
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

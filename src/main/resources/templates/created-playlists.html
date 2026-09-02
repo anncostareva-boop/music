@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="createdPlaylists" type="java.util.List<com.music.app.entity.Playlist>"*/-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Created Playlists - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Page Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-400 tracking-tight">
+                    Your Playlists
+                </h1>
+                <span class="text-xs px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 font-medium text-purple-300"
+                      th:text="${createdPlaylists != null ? #lists.size(createdPlaylists) : 0} + ' created'">0 created</span>
+            </div>
+            <p class="text-xs text-purple-200/50 mt-1 tracking-wide">Manage all the custom playlists you've built.</p>
+        </div>
+
+        <a th:href="@{/client/create-playlist}"
+           class="btn-neon text-white text-xs font-semibold px-5 py-3 rounded-full tracking-wider flex items-center gap-1.5 self-end sm:self-auto">
+            <span>➕</span> Add Playlist
+        </a>
+    </div>
+
+    <!-- Table Container Card (When Playlists Exist) -->
+    <div th:if="${not #lists.isEmpty(createdPlaylists)}" class="glass-card rounded-[2rem] overflow-hidden p-2">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <tbody class="divide-y divide-white/[0.04] text-sm font-light text-purple-100">
+
+                <tr th:each="createdPlaylist, iterStat : ${createdPlaylists}"
+                    class="hover:bg-white/[0.02] transition-colors duration-150 group">
+
+                    <!-- Index & Artwork Thumbnail & Title -->
+                    <td class="py-4 px-6 font-medium text-white flex items-center gap-4">
+                        <span class="text-xs text-purple-200/30 w-4 block group-hover:hidden" th:text="${iterStat.count}">1</span>
+                        <a th:href="@{/client/playlist-songs/{id}(id=${createdPlaylist.playlistId})}"
+                           class="text-xs text-purple-400 w-4 hidden group-hover:block cursor-pointer">▶</a>
+
+                        <!-- Playlist Artwork Cover -->
+                        <a th:href="@{/client/playlist-songs/{id}(id=${createdPlaylist.playlistId})}"
+                           class="w-10 h-10 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 shadow-md block">
+                            <img th:src="@{/files/{name}(name=${createdPlaylist.artworkFileName != null ? createdPlaylist.artworkFileName : 'default-cover.jpg'})}"
+                                 alt="Playlist Cover"
+                                 class="w-full h-full object-cover">
+                        </a>
+
+                        <div class="flex flex-col">
+                            <a th:href="@{/client/playlist-songs/{id}(id=${createdPlaylist.playlistId})}"
+                               class="font-semibold text-white tracking-wide hover:text-purple-300 transition-colors"
+                               th:text="${createdPlaylist.playlistName}">Playlist Title</a>
+                            <span class="text-xs text-purple-200/40 mt-0.5">By you</span>
+                        </div>
+                    </td>
+
+                    <!-- Metrics/Likes Column -->
+                    <td class="py-4 px-6 text-center font-mono text-xs text-purple-300">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
+                            ❤️ <span th:text="${createdPlaylist.playlistLikesAmount != null ? createdPlaylist.playlistLikesAmount : 0}">0</span>
+                        </span>
+                    </td>
+
+                    <!-- View/Manage Playlist Button -->
+                    <td class="py-4 px-6 text-right">
+                        <a th:href="@{/client/playlist-songs/{id}(id=${createdPlaylist.playlistId})}"
+                           class="text-xs font-semibold text-purple-300 hover:text-white transition-colors duration-200 inline-flex items-center gap-1">
+                            <span>Manage tracks</span>
+                            <span>&rarr;</span>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty Fallback State Container -->
+    <div th:if="${#lists.isEmpty(createdPlaylists)}"
+         class="glass-card p-12 rounded-[2rem] text-center flex flex-col items-center justify-center space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-300 shadow-inner text-2xl">
+            📻
+        </div>
+        <div>
+            <h3 class="text-xl font-bold text-white mb-1">You haven't created any playlists yet</h3>
+            <p class="text-xs text-purple-200/50 max-w-sm font-light">Create custom playlists and organize your favorite music.</p>
+        </div>
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

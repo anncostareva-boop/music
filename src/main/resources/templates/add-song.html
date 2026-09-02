@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="form" type="com.music.app.forms.SongForm"*/-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Song - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to your Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+
+    <div class="glass-card w-full max-w-md p-8 md:p-10 rounded-[2.5rem] text-center transition-transform duration-500 hover:scale-[1.01]">
+
+        <h2 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-300 tracking-tight mb-2">
+            Add Song
+        </h2>
+        <p class="text-xs text-purple-200/50 tracking-wide mb-6">Upload and share your music with the world.</p>
+
+        <!-- DYNAMIC ALERTS -->
+        <!-- Success Alert (Redirect flash attribute) -->
+        <div th:if="${successMessage}"
+             class="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium tracking-wide text-left flex items-center gap-2"
+             th:text="${successMessage}">
+        </div>
+
+        <!-- Validation Failure Alert (Fixed typo to grab 'SongBio') -->
+        <div th:if="${SongBio}"
+             class="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium tracking-wide text-left flex items-center gap-2"
+             th:text="${SongBio}">
+        </div>
+
+        <!-- BACKEND BOUND FORM -->
+        <!-- Fixed: Added th:object and method="post" -->
+        <form th:action="@{/client/add-song}" th:object="${form}" method="post" enctype="multipart/form-data" class="space-y-5 text-left">
+
+            <!-- Song Title Input -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Title
+                </label>
+                <!-- Fixed: Changed th:type="title" to standard type="text" -->
+                <input type="text"
+                       th:field="*{songName}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-purple-300/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-200 text-sm font-light"
+                       placeholder="e.g. In Our Own Way"
+                       required>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Audio File
+                </label>
+
+                <input type="file"
+                       name="file"
+                       accept=".mp3,.wav"
+                       required
+                       class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white">
+            </div>
+
+            <!-- Artwork Image Input -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Cover Artwork
+                </label>
+                <input type="file"
+                       th:field="*{artwork}"
+                       accept="image/png, image/jpeg, image/webp"
+                       class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs">
+            </div>
+
+    <!-- Genre Input -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Genre
+                </label>
+                <!-- Fixed: Changed th:type="genre" to standard type="text" -->
+                <input type="text"
+                       th:field="*{genre}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-purple-300/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-200 text-sm font-light"
+                       placeholder="e.g. Electronic, Indie, Pop"
+                       required>
+            </div>
+
+            <!-- Submit Action button styled with the neon brand gradient -->
+            <button type="submit"
+                    class="btn-neon w-full text-white font-semibold py-3.5 rounded-full text-sm tracking-wider mt-4">
+                Add Song
+            </button>
+
+        </form>
+
+    </div>
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

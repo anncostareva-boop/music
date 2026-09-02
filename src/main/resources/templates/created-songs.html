@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="createdSongs" type="java.util.List<com.music.app.entity.Song>"*/-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Safe CSRF Tokens for AJAX/fetch logging -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+
+    <title>Created Songs - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Page Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-400 tracking-tight">
+                    Your Songs
+                </h1>
+                <span class="text-xs px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 font-medium text-purple-300"
+                      th:text="${#lists.size(createdSongs)} + ' uploaded'">0 uploaded</span>
+            </div>
+            <p class="text-xs text-purple-200/50 mt-1 tracking-wide">Manage and track your published tracks across Float.</p>
+        </div>
+
+        <a th:href="@{/client/add-song}"
+           class="btn-neon text-white text-xs font-semibold px-5 py-3 rounded-full tracking-wider flex items-center gap-1.5 self-end sm:self-auto">
+            <span>➕</span> Add Song
+        </a>
+    </div>
+
+    <!-- Table Container Card (When Songs Exist) -->
+    <div th:if="${not #lists.isEmpty(createdSongs)}" class="glass-card rounded-[2rem] overflow-hidden p-2">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <tbody class="divide-y divide-white/[0.04] text-sm font-light text-purple-100">
+
+                <tr th:each="createdSong, iterStat : ${createdSongs}"
+                    class="hover:bg-white/[0.02] transition-colors duration-150 group">
+
+                    <!-- Index & Artwork & Title -->
+                    <td class="py-4 px-6 font-medium text-white flex items-center gap-4">
+                        <span class="text-xs text-purple-200/30 w-4 block group-hover:hidden" th:text="${iterStat.count}">1</span>
+                        <span class="text-xs text-purple-400 w-4 hidden group-hover:block cursor-pointer play-btn"
+                              th:data-src="@{/files/{name}(name=${createdSong.fileName})}"
+                              th:data-song-id="${createdSong.songID}">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </span>
+
+                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 shadow-md">
+                            <img th:src="@{/files/{name}(name=${createdSong.artworkFileName != null ? createdSong.artworkFileName : 'default-cover.jpg'})}"
+                                 alt="Cover Artwork"
+                                 class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-white tracking-wide cursor-pointer hover:text-purple-300 transition-colors play-btn"
+                                  th:data-src="@{/files/{name}(name=${createdSong.fileName})}"
+                                  th:data-song-id="${createdSong.songID}"
+                                  th:text="${createdSong.songName}">Song Title</span>
+                            <span class="text-xs text-purple-200/40 mt-0.5">Your Upload</span>
+                        </div>
+                    </td>
+
+                    <!-- Genre -->
+                    <td class="py-4 px-6">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs font-medium text-purple-300"
+                              th:text="${createdSong.genreName != null ? createdSong.genreName : 'General'}">Genre</span>
+                    </td>
+
+                    <!-- Clickable Likes Button Column -->
+                    <td class="py-4 px-6 text-center">
+                        <form th:action="@{/client/toggle-like/{id}(id=${createdSong.songID})}"
+                              method="post"
+                              class="inline">
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:scale-105 transition-all text-xs font-mono">
+                                <span th:text="${createdSong != null && likedSongIds != null && likedSongIds.contains(createdSong.songID) ? '❤️' : '🤍'}">🤍</span>
+                                <span th:text="${createdSong != null ? createdSong.songLikesAmount : 0}">0</span>
+                            </button>
+                        </form>
+                    </td>
+
+                    <!-- Play Track Button -->
+                    <td class="py-4 px-6 text-right">
+                        <button type="button"
+                                class="play-btn text-xs font-semibold text-purple-300 hover:text-white transition-colors duration-200 inline-flex items-center gap-1 cursor-pointer"
+                                th:data-src="@{/files/{name}(name=${createdSong.fileName})}"
+                                th:data-song-id="${createdSong.songID}">
+                            <span>Play track</span>
+                            <span>&rarr;</span>
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty Fallback State Container -->
+    <div th:if="${#lists.isEmpty(createdSongs)}"
+         class="glass-card p-12 rounded-[2rem] text-center flex flex-col items-center justify-center space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-300 shadow-inner">
+            <svg class="w-6 h-6 stroke-current fill-none" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 4.122A13.931 13.931 0 0112 21c-1.84 0-3.58-.354-5.183-1.001"/>
+            </svg>
+        </div>
+        <div>
+            <h3 class="text-xl font-bold text-white mb-1">You haven't created any songs yet</h3>
+            <p class="text-xs text-purple-200/50 max-w-sm font-light">Upload your first track and share it with the community.</p>
+        </div>
+    </div>
+
+</main>
+
+<!-- Global Sticky Audio Player -->
+<div id="player-container" class="fixed bottom-0 left-0 w-full bg-[#0a0a0f]/90 backdrop-blur-md border-t border-white/10 p-3 hidden z-50 transform translate-y-full transition-transform duration-300">
+    <div class="max-w-5xl mx-auto px-4">
+        <audio id="global-audio-player" controls class="w-full h-10 rounded-full outline-none" controlsList="nodownload">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- PLAYBACK SCRIPT -->
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const audioPlayer = document.getElementById("global-audio-player");
+        const playerContainer = document.getElementById("player-container");
+        const playButtons = document.querySelectorAll(".play-btn");
+
+        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+
+        playButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const audioUrl = this.dataset.src;
+                const songId = this.dataset.songId;
+
+                if (!audioUrl) return;
+
+                // 1. Reveal and start playback
+                playerContainer.classList.remove("hidden", "translate-y-full");
+                audioPlayer.src = audioUrl;
+                audioPlayer.play();
+
+                // 2. Record play event in history
+                if (songId) {
+                    const headers = {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    };
+                    if (csrfToken && csrfHeader) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    fetch('/api/history/record', {
+                        method: 'POST',
+                        headers: headers,
+                        body: new URLSearchParams({ 'songId': songId })
+                    }).catch(error => console.error("Error logging history:", error));
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

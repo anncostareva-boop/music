@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="playlists" type="java.util.List<com.music.app.entity.Playlist>"*/-->
+<!--/*@thymesVar id="currentUserId" type="java.lang.Long"*/-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSRF Tokens for AJAX/fetch logging -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+
+    <title>Browse Playlists - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to your Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- Flash Notification Messages -->
+<div th:if="${successMessage}"
+     th:text="${successMessage}"
+     class="max-w-5xl mx-auto w-full px-4 mt-2 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium text-center">
+</div>
+<div th:if="${errorMessage}"
+     th:text="${errorMessage}"
+     class="max-w-5xl mx-auto w-full px-4 mt-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs font-medium text-center">
+</div>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+    <!-- Page Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+        <div>
+            <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-400 tracking-tight">
+                Browse Playlists
+            </h1>
+            <p class="text-xs text-purple-200/50 mt-0.5 tracking-wide">Explore curated music collections from the community.</p>
+        </div>
+
+        <a th:href="@{/client/create-playlist}"
+           class="btn-neon text-white text-xs font-semibold px-5 py-3 rounded-full tracking-wider flex items-center gap-1.5 self-end sm:self-auto">
+            <span>➕</span> Add New Playlist
+        </a>
+    </div>
+
+    <!-- Table Container Card -->
+    <div class="glass-card rounded-[2rem] overflow-visible p-2">
+        <div class="overflow-x-visible">
+            <table class="w-full text-left border-collapse">
+                <tbody class="divide-y divide-white/[0.04] text-sm font-light text-purple-100">
+
+                <!-- Dynamic Row Iterator loop -->
+                <tr th:each="playlist, iterStat : ${playlists}"
+                    class="hover:bg-white/[0.02] transition-colors duration-150 group relative">
+
+                    <!-- 1. Playlist Index & Cover Artwork & Title Block -->
+                    <td class="py-4 px-6 font-medium text-white flex items-center gap-4">
+                        <span class="text-xs text-purple-200/30 w-4 block group-hover:hidden" th:text="${iterStat.count}">1</span>
+
+                        <!-- Hover Play Action Redirect -->
+                        <a th:href="@{/client/playlist-songs/{id}(id=${playlist.playlistId})}"
+                           class="text-xs text-purple-400 w-4 hidden group-hover:block cursor-pointer">▶</a>
+
+                        <!-- Playlist Artwork Link -->
+                        <a th:href="@{/client/playlist-songs/{id}(id=${playlist.playlistId})}"
+                           class="w-10 h-10 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 shadow-md block">
+                            <img th:src="@{/files/{name}(name=${playlist.artworkFileName != null ? playlist.artworkFileName : 'default-cover.jpg'})}"
+                                 alt="Playlist Cover"
+                                 class="w-full h-full object-cover">
+                        </a>
+
+                        <!-- Playlist Name Stack Link -->
+                        <div class="flex flex-col">
+                            <a th:href="@{/client/playlist-songs/{id}(id=${playlist.playlistId})}"
+                               class="font-semibold text-white tracking-wide hover:text-purple-300 transition-colors"
+                               th:text="${playlist.playlistName}">
+                                Playlist Title
+                            </a>
+                            <span class="text-xs text-purple-200/40 mt-0.5">Community Collection</span>
+                        </div>
+                    </td>
+
+                    <!-- 2. Author Column -->
+                    <td class="py-4 px-6 text-purple-200/70 font-medium">
+                        <span class="text-xs text-purple-200/40 mr-1">By</span>
+                        <span th:text="${playlist.playlistAuthor != null ? playlist.playlistAuthor : 'Anonymous'}">Author Name</span>
+                    </td>
+
+                    <!-- 3. Metrics/Likes Column -->
+                    <td class="py-4 px-6 text-center">
+                        <form th:action="@{/client/toggle-like-playlist/{id}(id=${playlist.playlistId})}"
+                              method="post"
+                              class="inline">
+                            <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:scale-105 transition-all text-xs font-mono">
+                                <span th:text="${playlist != null && likedPlaylistIds != null && likedPlaylistIds.contains(playlist.playlistId) ? '❤️' : '🤍'}">🤍</span>
+                                <span th:text="${playlist != null && playlist.playlistLikesAmount != null ? playlist.playlistLikesAmount : 0}">0</span>
+                            </button>
+                        </form>
+                    </td>
+
+                    <!-- 4. Quick Action Link -->
+                    <td class="py-4 px-6 text-right">
+                        <a th:href="@{/client/playlist-songs/{id}(id=${playlist.playlistId})}"
+                           class="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-500/20 text-xs font-medium transition-all">
+                            View Tracks &rarr;
+                        </a>
+                    </td>
+
+                    <!-- 5. Contextual Action Dropdown (Three Dots Menu) -->
+                    <td class="py-4 px-6 text-right relative">
+                        <div class="relative inline-block text-left">
+                            <button type="button"
+                                    class="action-menu-btn text-purple-200/50 hover:text-white transition-colors duration-200 p-2 text-lg rounded-full hover:bg-white/5 focus:outline-none">
+                                •••
+                            </button>
+
+                            <!-- Dropdown Menu Box -->
+                            <div class="action-dropdown hidden absolute right-0 mt-2 w-48 rounded-2xl bg-[#12121a]/95 border border-white/10 shadow-2xl backdrop-blur-xl py-1.5 z-50 divide-y divide-white/5 text-left">
+
+                                <div class="py-1">
+                                    <a th:href="@{/client/songs}"
+                                       class="flex items-center gap-2.5 px-4 py-2 text-xs text-purple-100 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                        <span>➕</span> Add Songs
+                                    </a>
+                                </div>
+
+                                <!-- Owner Only Actions -->
+                                <div th:if="${currentUserId == null or currentUserId == playlist.userId}" class="py-1">
+                                    <form th:action="@{/client/delete-playlist/{id}(id=${playlist.playlistId})}"
+                                          method="post"
+                                          onsubmit="return confirm('Are you sure you want to delete this playlist? This cannot be undone.');"
+                                          class="w-full">
+                                        <button type="submit"
+                                                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors">
+                                            <span>🗑️</span> Delete Playlist
+                                        </button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Empty Fallback State View block -->
+                <tr th:if="${#lists.isEmpty(playlists)}">
+                    <td colspan="5" class="py-12 text-center text-sm text-purple-200/30 font-light tracking-wide">
+                        No playlists available in the database yet. Be the first to create one!
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Action Dropdown Toggle Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuButtons = document.querySelectorAll(".action-menu-btn");
+
+        menuButtons.forEach(button => {
+            button.addEventListener("click", function(e) {
+                e.stopPropagation();
+                const currentDropdown = this.nextElementSibling;
+
+                // Close any other open dropdowns
+                document.querySelectorAll(".action-dropdown").forEach(dropdown => {
+                    if (dropdown !== currentDropdown) {
+                        dropdown.classList.add("hidden");
+                    }
+                });
+
+                // Toggle the clicked menu
+                currentDropdown.classList.toggle("hidden");
+            });
+        });
+
+        // Close dropdown when clicking anywhere outside
+        document.addEventListener("click", function() {
+            document.querySelectorAll(".action-dropdown").forEach(dropdown => {
+                dropdown.classList.add("hidden");
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

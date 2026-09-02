@@ -1,10 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile Details - Float Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-$END$
+<body class="flex flex-col min-h-screen justify-between bg-[#08080c] text-white">
+
+<!-- NAVBAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-4xl w-full mx-auto px-4 py-10 space-y-6">
+
+    <!-- Top Action Bar -->
+    <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <a th:href="@{/admin/users}"
+           class="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-purple-200 text-xs font-semibold tracking-wide transition-all">
+            ← Back to Users
+        </a>
+        <span class="text-[10px] px-3.5 py-1 rounded-full uppercase font-bold tracking-widest bg-purple-500/10 border border-purple-500/20 text-purple-300">
+            User Inspector
+        </span>
+    </div>
+
+    <!-- User Profile Overview Card -->
+    <div class="glass-card rounded-[2.5rem] p-8 border border-white/10 shadow-2xl backdrop-blur-xl bg-white/[0.02]">
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-white/10">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-3xl text-purple-300 shadow-inner">
+                    👤
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white" th:text="${user.userName}">Username</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs font-mono text-purple-300/60" th:text="'ID: #' + ${user.userId}">ID: #1</span>
+                        <span class="text-white/20">•</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                              th:classappend="${user.role != null and user.role.name() == 'ADMIN'} ? 'bg-red-500/10 border border-red-500/30 text-red-300' : 'bg-purple-500/10 border border-purple-500/20 text-purple-300'"
+                              th:text="${user.role}">CLIENT</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track & Playlist Counter Badges -->
+            <div class="flex items-center gap-3">
+                <div class="px-5 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-center min-w-[90px]">
+                    <span class="block text-xl font-black text-white" th:text="${userSongs != null ? #lists.size(userSongs) : 0}">0</span>
+                    <span class="text-[10px] text-purple-300/60 uppercase tracking-widest font-semibold">Tracks</span>
+                </div>
+                <div class="px-5 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-center min-w-[90px]">
+                    <span class="block text-xl font-black text-white" th:text="${userPlaylists != null ? #lists.size(userPlaylists) : 0}">0</span>
+                    <span class="text-[10px] text-purple-300/60 uppercase tracking-widest font-semibold">Playlists</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Meta Info Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
+            <div class="space-y-1">
+                <span class="text-[10px] font-semibold text-purple-300/60 uppercase tracking-widest">Email Address</span>
+                <p class="text-sm font-medium text-white" th:text="${user.email}">user@example.com</p>
+            </div>
+            <div class="space-y-1">
+                <span class="text-[10px] font-semibold text-purple-300/60 uppercase tracking-widest">Phone Number</span>
+                <p class="text-sm font-mono text-white" th:text="${user.phoneNumber != null and !user.phoneNumber.isBlank() ? user.phoneNumber : 'Not provided'}">+380...</p>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

@@ -1,10 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Playlist - Float</title>
+
+    <!-- Tailwind UI Layout Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to Global Theme File -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-$END$
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVIGATION BAR -->
+<header class="w-full z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN FORM WRAPPER -->
+<main class="flex-grow flex items-center justify-center px-6 py-12">
+
+    <div class="glass-card w-full max-w-xl p-8 md:p-10 rounded-[2.5rem] transition-transform duration-500 hover:scale-[1.01]">
+
+        <!-- Header Title -->
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-300 tracking-tight">
+                Create Playlist
+            </h1>
+            <p class="text-xs text-purple-200/50 mt-1 tracking-wide">Build a new music collection for your library</p>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${successMessage}"
+             th:text="${successMessage}"
+             class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium text-center">
+        </div>
+
+        <!-- Bio / Info Message -->
+        <div th:if="${PlaylistBio}"
+             th:text="${PlaylistBio}"
+             class="mb-6 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm text-center">
+        </div>
+
+        <!-- Form: ADDED enctype="multipart/form-data" FOR FILE UPLOADS -->
+        <form th:action="@{/client/create-playlist}"
+              th:object="${form}"
+              method="post"
+              enctype="multipart/form-data"
+              class="space-y-5 text-left">
+
+            <!-- Playlist Title Input -->
+            <div class="space-y-1.5">
+                <label for="playlistName" class="block text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Playlist Title
+                </label>
+                <input type="text"
+                       id="playlistName"
+                       th:field="*{playlistName}"
+                       placeholder="e.g. Chill Vibes, Workout 2026"
+                       class="w-full px-5 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-purple-300/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all text-sm font-light">
+                <p th:if="${#fields.hasErrors('playlistName')}"
+                   th:errors="*{playlistName}"
+                   class="text-xs text-rose-400 pl-1 mt-1"></p>
+            </div>
+
+            <!-- Author Input -->
+            <div class="space-y-1.5">
+                <label for="playlistAuthor" class="block text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Author
+                </label>
+                <input type="text"
+                       id="playlistAuthor"
+                       th:field="*{playlistAuthor}"
+                       placeholder="Your name or stage name"
+                       class="w-full px-5 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-purple-300/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all text-sm font-light">
+                <p th:if="${#fields.hasErrors('playlistAuthor')}"
+                   th:errors="*{playlistAuthor}"
+                   class="text-xs text-rose-400 pl-1 mt-1"></p>
+            </div>
+
+            <!-- Cover Artwork Input -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-purple-300/70 uppercase tracking-widest pl-1">
+                    Cover Artwork
+                </label>
+                <input type="file"
+                       th:field="*{artwork}"
+                       accept="image/png, image/jpeg, image/webp"
+                       class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs cursor-pointer">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                    class="btn-neon w-full text-white font-semibold py-3.5 rounded-full text-sm tracking-wider mt-4">
+                Create Playlist
+            </button>
+
+        </form>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

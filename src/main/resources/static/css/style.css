@@ -1,0 +1,40 @@
+/* ==========================================
+   GLOBAL MUSIC APP SYSTEM STYLES (style.css)
+   ========================================== */
+
+/* Deep purple gradient mesh matching image_99efe5.jpg */
+body {
+    background: radial-gradient(circle at 20% 20%, #4338ca 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, #6d28d9 0%, transparent 50%),
+    #1e1b4b; /* Deep purple base */
+    min-height: 100vh;
+    color: #f3f4f6;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Frosted Glassmorphism Utility Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Neon Glow Gradient Buttons & Accents */
+.btn-neon {
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-neon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
+}
+
+/* Glassy utility borders for lists/rows */
+.glass-divider {
+    border-color: rgba(255, 255, 255, 0.08);
+}

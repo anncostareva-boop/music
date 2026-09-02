@@ -1,10 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Songs Management - Float Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-$END$
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
+
+<!-- NAVBAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-slate-800/60">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Admin Portal
+                </span>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
+                <span>Songs Management</span>
+                <span class="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 font-medium text-purple-400"
+                      th:text="${#lists.size(songs)} + ' songs'">0 songs</span>
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">Inspect, manage, and edit tracks across the platform</p>
+        </div>
+
+        <a th:href="@{/admin/songs/add}"
+           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition-all shadow-lg shadow-purple-600/20 active:scale-95 w-fit">
+            <span>+</span>
+            <span>Add New Song</span>
+        </a>
+    </div>
+
+    <!-- Songs Table -->
+    <div th:if="${not #lists.isEmpty(songs)}" class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="bg-slate-900/90 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                <tr>
+                    <th scope="col" class="px-6 py-4">Song ID</th>
+                    <th scope="col" class="px-6 py-4">Title</th>
+                    <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                <tr th:each="song : ${songs}"
+                    class="hover:bg-slate-800/40 transition-colors group">
+
+                    <!-- Clickable Song ID -->
+                    <td class="px-6 py-4 font-mono text-xs">
+                        <a th:href="@{/admin/songs/{id}(id=${song.songID})}"
+                           class="inline-flex items-center gap-1 font-semibold text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 underline-offset-4 transition-colors"
+                           title="Inspect song details">
+                            <span>#</span><span th:text="${song.songID}">1</span>
+                        </a>
+                    </td>
+
+                    <!-- Song Info -->
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <span class="font-semibold text-white group-hover:text-purple-300 transition-colors"
+                                  th:text="${song.songName != null and !song.songName.isBlank() ? song.songName : 'Untitled Track'}">
+                                Name
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+
+                            <form th:action="@{/admin/songs/{songId}/delete(songId=${song.songID})}" method="post" class="inline"
+                                  onsubmit="return confirm('Are you sure you want to delete this song?');">
+                                <button type="submit"
+                                        class="px-2.5 py-1.5 rounded-lg bg-slate-800/60 hover:bg-rose-500/10 border border-slate-700/50 hover:border-rose-500/30 text-rose-400 hover:text-rose-300 text-xs font-medium transition-all"
+                                        title="Delete song">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(songs)}"
+         class="flex flex-col items-center justify-center py-20 px-4 rounded-3xl border border-dashed border-slate-800 bg-slate-900/20 text-center">
+        <h3 class="text-xl font-bold text-slate-200 mb-1">No songs found</h3>
+        <p class="text-sm text-slate-400 max-w-sm mb-6">There are currently no songs stored in the database.</p>
+        <a th:href="@{/admin/songs/add}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition-all shadow-lg shadow-purple-600/20 active:scale-95">
+            <span>+</span>
+            <span>Add First Song</span>
+        </a>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

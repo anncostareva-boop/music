@@ -1,10 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <body>
-$END$
+
+<nav th:fragment="navbar" class="w-full px-4 py-5">
+
+    <div class="
+        max-w-[90rem] mx-auto
+        flex items-center justify-between
+        px-10 py-4
+        rounded-[24px]
+        backdrop-blur-xl
+        bg-white/[0.04]
+        border border-white/[0.08]
+        shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+    ">
+
+        <!-- Logo -->
+        <a th:href="@{/}"
+           class="
+           text-3xl
+           font-black
+           tracking-tight
+           text-white
+           hover:text-purple-300
+           transition-all duration-300">
+            Float
+        </a>
+
+        <!-- Guest -->
+        <div sec:authorize="isAnonymous()">
+
+            <a th:href="@{/login}"
+               class="
+               px-6 py-3
+               rounded-2xl
+               bg-gradient-to-r
+               from-purple-600
+               to-violet-500
+               text-white
+               text-sm
+               font-semibold
+               shadow-lg
+               hover:scale-105
+               transition-all duration-300">
+                Sign In
+            </a>
+
+        </div>
+
+        <!-- Authenticated -->
+        <div sec:authorize="isAuthenticated()"
+             class="flex items-center gap-8">
+
+            <a th:href="@{/client/songs}"
+               class="text-sm font-medium text-purple-100/80 hover:text-white transition">
+                Songs
+            </a>
+
+            <a th:href="@{/client/playlists}"
+               class="text-sm font-medium text-purple-100/80 hover:text-white transition">
+                Playlists
+            </a>
+
+            <a th:href="@{/client/albums}"
+               class="text-sm font-medium text-purple-100/80 hover:text-white transition">
+                Albums
+            </a>
+
+            <a th:href="@{/client/trending}"
+               class="text-sm font-medium text-purple-100/80 hover:text-white transition">
+                Trending
+            </a>
+
+            <a th:href="@{/profile}"
+               class="text-sm font-medium text-purple-100/80 hover:text-white transition">
+                Profile
+            </a>
+
+            <!-- Admin Link (Only visible if logged in user has ADMIN role) -->
+            <a sec:authorize="hasRole('ADMIN')"
+               th:href="@{/admin/dashboard}"
+               class="
+               px-4 py-2
+               rounded-xl
+               bg-red-500/10
+               border border-red-500/30
+               text-red-300
+               text-sm
+               font-medium
+               hover:bg-red-500/20
+               hover:border-red-500/50
+               transition-all duration-300">
+                ⚙️ Admin Panel
+            </a>
+
+            <!-- Sign Out Form -->
+            <form th:action="@{/logout}" method="post">
+
+                <button type="submit"
+                        class="
+                        px-5 py-2.5
+                        rounded-xl
+                        bg-white/5
+                        border border-white/10
+                        text-white
+                        text-sm
+                        font-medium
+                        hover:bg-red-500/10
+                        hover:border-red-400/20
+                        hover:text-red-300
+                        transition-all duration-300">
+                    Sign Out
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</nav>
+
 </body>
 </html>

@@ -1,10 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User - Admin Float</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-$END$
+<body class="flex flex-col min-h-screen justify-between">
+
+<!-- NAVBAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-grow max-w-xl w-full mx-auto px-4 py-10 flex flex-col justify-center space-y-6">
+
+    <!-- Header Block -->
+    <div class="text-center space-y-2">
+        <span class="text-[10px] px-3 py-1 rounded-full uppercase font-bold tracking-widest bg-purple-500/10 border border-purple-500/20 text-purple-300">
+            Admin Portal
+        </span>
+        <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-100 to-purple-400 tracking-tight">
+            Add New User
+        </h1>
+        <p class="text-xs text-purple-200/50 font-light">Manually provision and register a client credential set.</p>
+    </div>
+
+    <!-- Alert Notifications -->
+    <div th:if="${message}"
+         th:text="${message}"
+         class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs font-medium text-center shadow-lg">
+    </div>
+
+    <!-- Glass Form Card -->
+    <div class="glass-card rounded-[2.5rem] p-8 border border-white/10 shadow-2xl backdrop-blur-xl">
+        <form th:action="@{/admin/add-user}" th:object="${form}" method="post" class="space-y-4">
+
+            <!-- Username Field -->
+            <div class="space-y-1.5">
+                <label for="userName" class="block text-[11px] font-semibold text-purple-300 uppercase tracking-widest pl-1">
+                    Username
+                </label>
+                <input type="text"
+                       id="userName"
+                       th:field="*{userName}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-purple-200/30 focus:outline-none focus:border-purple-400 focus:bg-white/[0.06] transition-all text-xs"
+                       placeholder="Unique username"
+                       required>
+            </div>
+
+            <!-- Email Field -->
+            <div class="space-y-1.5">
+                <label for="email" class="block text-[11px] font-semibold text-purple-300 uppercase tracking-widest pl-1">
+                    Email Address
+                </label>
+                <input type="email"
+                       id="email"
+                       th:field="*{email}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-purple-200/30 focus:outline-none focus:border-purple-400 focus:bg-white/[0.06] transition-all text-xs"
+                       placeholder="name@example.com"
+                       required>
+            </div>
+
+            <!-- Phone Number Field -->
+            <div class="space-y-1.5">
+                <label for="phoneNumber" class="block text-[11px] font-semibold text-purple-300 uppercase tracking-widest pl-1">
+                    Phone Number
+                </label>
+                <input type="tel"
+                       id="phoneNumber"
+                       th:field="*{phoneNumber}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-purple-200/30 focus:outline-none focus:border-purple-400 focus:bg-white/[0.06] transition-all text-xs"
+                       placeholder="+380..."
+                       required>
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-1.5">
+                <label for="password" class="block text-[11px] font-semibold text-purple-300 uppercase tracking-widest pl-1">
+                    Temporary Password
+                </label>
+                <input type="password"
+                       id="password"
+                       th:field="*{password}"
+                       class="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-purple-200/30 focus:outline-none focus:border-purple-400 focus:bg-white/[0.06] transition-all text-xs"
+                       placeholder="••••••••"
+                       required>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="pt-4 flex items-center justify-end gap-3">
+                <a th:href="@{/admin/users}"
+                   class="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-purple-200 text-xs font-semibold tracking-wide transition-all">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold tracking-wide shadow-lg shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Create User
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

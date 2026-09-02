@@ -1,10 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSRF Tokens for AJAX/fetch logging -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+
+    <title th:text="${album != null ? album.albumName + ' - Album Tracks' : 'Album Details - Float'}">Album Tracks - Float</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-$END$
+<body class="bg-[#08080c] text-white min-h-screen flex flex-col justify-between antialiased selection:bg-purple-500 selection:text-white">
+
+<!-- NAVBAR -->
+<header class="w-full px-6 py-4 z-10">
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+</header>
+
+<!-- MAIN WRAPPER -->
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Flash Feedback Messages -->
+    <div th:if="${successMessage}" th:text="${successMessage}"
+         class="w-full p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium text-center">
+    </div>
+
+    <!-- Navigation / Breadcrumbs -->
+    <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <a th:href="@{/client/albums}"
+           class="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-purple-200 text-xs font-semibold tracking-wide transition-all">
+            &larr; Back to Albums
+        </a>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] px-3.5 py-1 rounded-full uppercase font-bold tracking-widest bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                Album Tracklist
+            </span>
+        </div>
+    </div>
+
+    <!-- Album Header Hero Section -->
+    <div class="glass-card rounded-[2.5rem] p-6 sm:p-8 border border-white/10 bg-white/[0.02] shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
+
+        <!-- Artwork Container with Letter Fallback -->
+        <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl overflow-hidden bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 shadow-2xl relative">
+            <img th:if="${album.artworkFileName != null and !album.artworkFileName.isBlank()}"
+                 th:src="@{/files/{name}(name=${album.artworkFileName})}"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                 alt="Album Cover"
+                 class="w-full h-full object-cover">
+            <span class="text-3xl font-bold text-purple-300 uppercase"
+                  th:style="${album.artworkFileName != null and !album.artworkFileName.isBlank()} ? 'display: none;' : 'display: flex;'"
+                  th:text="${album.albumName != null and !album.albumName.isEmpty() ? #strings.substring(album.albumName, 0, 1) : 'A'}">A</span>
+        </div>
+
+        <!-- Meta Details -->
+        <div class="flex-grow text-center sm:text-left space-y-3">
+            <div class="inline-block">
+                <span class="text-xs font-mono text-purple-300/60 uppercase tracking-widest"
+                      th:text="'Release #' + ${album.albumId}">Release #1</span>
+            </div>
+            <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight"
+                th:text="${album.albumName}">Album Name</h1>
+            <p class="text-sm font-medium text-purple-300"
+               th:text="${album.artistName != null ? album.artistName : 'Various / Curated'}">Artist Name</p>
+
+            <div class="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10 text-purple-200/80"
+                      th:text="${songs != null ? #lists.size(songs) : 0} + ' Tracks'">0 Tracks</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracklist Section -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between px-2">
+            <h2 class="text-lg font-bold text-white tracking-tight">Songs in this Album</h2>
+        </div>
+
+        <!-- Songs Table -->
+        <div th:if="${not #lists.isEmpty(songs)}" class="glass-card rounded-[2rem] overflow-hidden p-2 border border-white/10 bg-white/[0.02]">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                    <tr class="text-[11px] uppercase tracking-wider text-purple-300/60 border-b border-white/5">
+                        <th scope="col" class="py-3.5 px-6 w-16">#</th>
+                        <th scope="col" class="py-3.5 px-6">Title</th>
+                        <th scope="col" class="py-3.5 px-6">Artist</th>
+                        <th scope="col" class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/[0.04] text-sm font-light text-purple-100">
+                    <tr th:each="song, iterStat : ${songs}"
+                        class="hover:bg-white/[0.02] transition-colors duration-150 group">
+
+                        <!-- Index Number & Play Button on Hover -->
+                        <td class="py-4 px-6 font-mono text-xs text-purple-300/50">
+                            <span class="w-4 block group-hover:hidden" th:text="${iterStat.count}">1</span>
+                            <span class="w-4 hidden group-hover:block cursor-pointer text-purple-400 play-btn"
+                                  th:data-src="${song.fileName != null ? '/files/' + song.fileName : ''}"
+                                  th:data-song-id="${song.songID}">
+                                <svg class="w-3.5 h-3.5 fill-current pointer-events-none" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </span>
+                        </td>
+
+                        <!-- Title & Track Info (Click to play) -->
+                        <td class="py-4 px-6 font-medium text-white flex items-center gap-4">
+                            <!-- Artwork Thumbnail -->
+                            <div class="w-10 h-10 rounded-lg overflow-hidden bg-purple-500/20 border border-purple-500/30 flex-shrink-0 shadow-md relative flex items-center justify-center">
+                                <img th:if="${song.artworkFileName != null and !song.artworkFileName.isBlank()}"
+                                     th:src="@{/files/{name}(name=${song.artworkFileName})}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                     alt="Cover Artwork"
+                                     class="w-full h-full object-cover">
+                                <span class="text-xs font-bold text-purple-300 uppercase"
+                                      th:style="${song.artworkFileName != null and !song.artworkFileName.isBlank()} ? 'display: none;' : 'display: flex;'"
+                                      th:text="${song.songName != null and !song.songName.isEmpty() ? #strings.substring(song.songName, 0, 1) : 'S'}">S</span>
+                            </div>
+
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-white tracking-wide cursor-pointer hover:text-purple-300 transition-colors play-btn"
+                                      th:data-src="${song.fileName != null ? '/files/' + song.fileName : ''}"
+                                      th:data-song-id="${song.songID}"
+                                      th:text="${song.songName != null ? song.songName : 'Untitled Track'}">Song Title</span>
+                                <span class="text-xs text-purple-200/40 mt-0.5" th:text="${song.genreName != null ? song.genreName : 'General'}">Genre</span>
+                            </div>
+                        </td>
+
+                        <!-- Artist -->
+                        <td class="py-4 px-6 text-purple-200/70 text-xs"
+                            th:text="${song.artistName != null ? song.artistName : (album.artistName != null ? album.artistName : 'Unknown')}">
+                            Artist Name
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-4 px-6 text-right">
+                            <div class="inline-flex items-center gap-2">
+                                <!-- Manage Track -->
+                                <a th:href="@{/client/songs/{id}(id=${song.songID})}"
+                                   class="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-white text-xs font-medium transition-all">
+                                    Manage &rarr;
+                                </a>
+
+                                <!-- Remove Song From This Album -->
+                                <form th:action="@{/client/delete-song-album/{albumId}(albumId=${album.albumId})}"
+                                      method="post"
+                                      onsubmit="return confirm('Remove this song from the album?');"
+                                      class="inline">
+                                    <input type="hidden" name="songId" th:value="${song.songID}" />
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 hover:text-white text-xs font-medium transition-all"
+                                            title="Remove from Album">
+                                        Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty Tracklist Container -->
+        <div th:if="${#lists.isEmpty(songs)}"
+             class="glass-card p-12 rounded-[2rem] text-center flex flex-col items-center justify-center space-y-3 border border-white/10 bg-white/[0.02]">
+            <h3 class="text-base font-bold text-white">No tracks in this album yet</h3>
+            <p class="text-xs text-purple-200/50 max-w-sm font-light">
+                Tracks uploaded with this album association will automatically appear here.
+            </p>
+        </div>
+    </div>
+
+</main>
+
+<!-- Global Sticky Audio Player -->
+<div id="player-container" class="fixed bottom-0 left-0 w-full bg-[#0a0a0f]/90 backdrop-blur-md border-t border-white/10 p-3 hidden z-50 transform translate-y-full transition-transform duration-300">
+    <div class="max-w-5xl mx-auto px-4">
+        <audio id="global-audio-player" controls class="w-full h-10 rounded-full outline-none" controlsList="nodownload">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Audio Player Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const audioPlayer = document.getElementById("global-audio-player");
+        const playerContainer = document.getElementById("player-container");
+        const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+
+        document.querySelectorAll(".play-btn").forEach(button => {
+            button.addEventListener("click", function(e) {
+                const target = e.currentTarget;
+                const audioUrl = target.getAttribute("data-src");
+                const songId = target.getAttribute("data-song-id");
+
+                if (!audioUrl || audioUrl.trim() === "" || audioUrl.endsWith("/files/")) {
+                    alert("No audio file found for this track.");
+                    return;
+                }
+
+                playerContainer.classList.remove("hidden");
+                setTimeout(() => {
+                    playerContainer.classList.remove("translate-y-full");
+                }, 10);
+
+                audioPlayer.src = audioUrl;
+                audioPlayer.load();
+
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.error("Audio playback error:", err);
+                    });
+                }
+
+                if (songId) {
+                    const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+                    if (csrfToken && csrfHeader) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    fetch("/api/history/record", {
+                        method: "POST",
+                        headers: headers,
+                        body: "songId=" + encodeURIComponent(songId)
+                    }).catch(error => console.error("Error logging history:", error));
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
